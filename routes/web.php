@@ -1,0 +1,70 @@
+<?php
+
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\JurusanController;
+use App\Http\Controllers\KelasController;
+use App\Http\Controllers\PembayaranController;
+use App\Http\Controllers\PetugasController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SiswaController;
+use App\Http\Controllers\SppController;
+use App\Http\Controllers\UserController;
+use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Route;
+use Inertia\Inertia;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/
+
+// // Route::get('/', function () {
+// //     return Inertia::render('Welcome', [
+// //         'canLogin' => Route::has('login'),
+// //         'canRegister' => Route::has('register'),
+// //         'laravelVersion' => Application::VERSION,
+// //         'phpVersion' => PHP_VERSION,
+//     ]);
+// });
+
+Route::get('/', function () {
+    return Inertia::render('Welcome', [
+        'canLogin' => Route::has('login'),
+        'canRegister' => Route::has('register'),
+        'laravelVersion' => Application::VERSION,
+        'phpVersion' => PHP_VERSION,
+    ]);
+});
+
+// Route::get('/', function () {
+//     return redirect('/index');
+// });
+
+
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::get('/pages', [DashboardController::class,'index'])->name('dashboard');
+    // Route::get('/pages',function(){return redirect(route('pembayaran.index'));});
+
+    Route::prefix('pages')->group(function(){
+        Route::middleware(['level:admin'])->group(function(){
+            Route::resource('/siswa', SiswaController::class);
+            Route::resource('/users', UserController::class);
+            Route::resource('/kelas', KelasController::class);
+            Route::resource('/jurusan', JurusanController::class);
+            Route::resource('/petugas', PetugasController::class);
+            Route::resource('/spp', SppController::class);
+        });
+        Route::resource('/pembayaran', PembayaranController::class);
+    });
+});
+
+require __DIR__.'/auth.php';
